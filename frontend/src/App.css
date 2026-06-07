@@ -1,0 +1,231 @@
+:root {
+  --primary: #25d366; /* WhatsApp Green */
+  --secondary: #128c7e;
+  --bg: #f0f2f5;
+  --card: #ffffff;
+  --text: #1c1e21;
+  --border: #dddfe2;
+  --danger: #dc3545;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 95%; /* Aumentado de 800px para ocupar casi toda la pantalla */
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.main-layout {
+  display: grid; 
+  grid-template-columns: 280px 1fr; 
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.input-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+input {
+  flex: 1;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+button {
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: white;
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item-sidebar {
+  padding: 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.list-item-sidebar:hover {
+  background: #f0f2f5;
+}
+
+.list-item-sidebar.active {
+  background: var(--primary);
+  color: white;
+}
+
+.list-item-sidebar input {
+  width: 100%;
+  padding: 0.2rem;
+  border: none;
+  border-radius: 4px;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  table-layout: fixed; /* Asegura que las columnas se distribuyan uniformemente */
+}
+
+.comparison-table th:first-child, 
+.comparison-table td:first-child {
+  width: 20%; /* El nombre del producto ocupa menos espacio proporcional */
+}
+
+.comparison-table th, .comparison-table td {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.comparison-table th {
+  background: #f8f9fa;
+  font-weight: 700;
+  text-align: center;
+}
+
+.product-cell {
+  position: relative;
+  vertical-align: top;
+}
+
+.prod-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+
+.prod-price {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--secondary);
+}
+
+.prod-link {
+  display: block;
+  font-size: 0.75rem;
+  color: #007bff;
+  text-decoration: none;
+  margin-top: 0.5rem;
+}
+
+.prod-link:hover {
+  text-decoration: underline;
+}
+
+/* Tooltip Mejorado */
+.tooltip-container {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip {
+  visibility: hidden;
+  position: absolute;
+  z-index: 100;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 0.8rem;
+  border-radius: 8px;
+  width: 220px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  pointer-events: none;
+  white-space: pre-wrap;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+.total-row {
+  background: #e7f9ee;
+  font-weight: bold;
+}
+
+.total-row td {
+  font-size: 1.2rem;
+  color: var(--secondary);
+}
