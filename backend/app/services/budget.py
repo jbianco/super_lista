@@ -2,19 +2,19 @@ from typing import List, Dict, Optional
 import asyncio
 import difflib
 from app.providers.base import ProductResult, BaseSupermarketProvider
-from app.providers.super_mami import SuperMamiProvider
-from app.providers.tadicor import TadicorProvider
 from app.providers.carrefour import CarrefourProvider
 from app.providers.changomas import ChangomasProvider
+from app.providers.disco import DiscoProvider
+from app.providers.jumbo import JumboProvider
+
 
 class BudgetService:
     def __init__(self):
-        # Todos los proveedores disponibles
         self.all_providers: List[BaseSupermarketProvider] = [
-            SuperMamiProvider(),
-            TadicorProvider(),
             CarrefourProvider(),
-            ChangomasProvider()
+            ChangomasProvider(),
+            DiscoProvider(),
+            JumboProvider(),
         ]
 
     async def get_best_budget(self, items_queries: List[str], enabled_stores: Optional[List[str]] = None) -> Dict:
@@ -139,8 +139,11 @@ class BudgetService:
             store = info["store"]
             if store not in best_plan["splits"]:
                 best_plan["splits"][store] = {"items": [], "subtotal": 0.0}
-            
-            best_plan["splits"][store]["items"].append(info["product"])
+
+            best_plan["splits"][store]["items"].append({
+                "product": info["product"],
+                "query": query,
+            })
             best_plan["splits"][store]["subtotal"] += info["product"].price
             best_plan["grand_total"] += info["product"].price
 

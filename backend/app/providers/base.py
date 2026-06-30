@@ -2,13 +2,17 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from pydantic import BaseModel
 
+
 class ProductResult(BaseModel):
     name: str
     price: float
-    unit: str  # e.g., "kg", "u", "l"
+    unit: str
+    brand: str
     store: str
     url: Optional[str] = None
+    details: Optional[str] = None
     image_url: Optional[str] = None
+
 
 class BaseSupermarketProvider(ABC):
     @property

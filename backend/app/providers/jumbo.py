@@ -3,10 +3,10 @@ from app.providers.base import BaseSupermarketProvider, ProductResult
 from app.scrapers.vtex import search_vtex
 
 
-class CarrefourProvider(BaseSupermarketProvider):
+class JumboProvider(BaseSupermarketProvider):
     @property
     def store_name(self) -> str:
-        return "Carrefour"
+        return "Jumbo"
 
     async def search_product(self, query: str) -> List[ProductResult]:
-        return await search_vtex("Carrefour", query)
+        return await search_vtex("Jumbo", query)
