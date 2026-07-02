@@ -12,7 +12,7 @@ beforeEach(() => {
 describe('useComparison', () => {
   it('initializes with all stores selected', () => {
     const { result } = renderHook(() => useComparison())
-    expect(result.current.selectedStores).toEqual(['Carrefour', 'Changomas', 'Disco', 'Jumbo'])
+    expect(result.current.selectedStores).toEqual(['Carrefour', 'Changomas', 'Disco', 'Jumbo', 'MercadoLibre'])
   })
 
   it('toggles a store selection', () => {

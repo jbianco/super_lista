@@ -6,6 +6,7 @@ from app.providers.carrefour import CarrefourProvider
 from app.providers.changomas import ChangomasProvider
 from app.providers.disco import DiscoProvider
 from app.providers.jumbo import JumboProvider
+from app.providers.mercadolibre import MercadoLibreProvider
 
 
 class BudgetService:
@@ -15,6 +16,7 @@ class BudgetService:
             ChangomasProvider(),
             DiscoProvider(),
             JumboProvider(),
+            MercadoLibreProvider(),
         ]
 
     async def get_best_budget(self, items_queries: List[str], enabled_stores: Optional[List[str]] = None) -> Dict:

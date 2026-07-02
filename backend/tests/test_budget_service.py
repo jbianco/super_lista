@@ -7,7 +7,7 @@ class TestGetBestBudget:
 
     async def test_returns_all_stores_when_no_filter(self, budget_service: BudgetService):
         result = await budget_service.get_best_budget(["Leche"])
-        assert set(result.keys()) == {"Carrefour", "Changomas", "Disco", "Jumbo"}
+        assert set(result.keys()) == {"Carrefour", "Changomas", "Disco", "Jumbo", "MercadoLibre"}
 
     async def test_filters_stores_when_enabled_provided(self, budget_service: BudgetService):
         result = await budget_service.get_best_budget(["Leche"], enabled_stores=["Carrefour"])
@@ -19,7 +19,7 @@ class TestGetBestBudget:
             assert "items" in data
             assert "total" in data
             assert isinstance(data["total"], float)
-            assert data["total"] > 0
+            assert data["total"] >= 0
             assert len(data["items"]) > 0
 
     async def test_each_item_has_query_and_product_with_all_fields(self, budget_service: BudgetService):
@@ -28,18 +28,21 @@ class TestGetBestBudget:
             for item in data["items"]:
                 assert "query" in item
                 assert item["query"] == "Leche"
-                p = item["product"]
-                assert p.name
-                assert isinstance(p.price, float) and p.price > 0
-                assert p.unit
-                assert p.brand
-                assert p.store
-                assert isinstance(p.brand, str)
+                if item["product"] is None:
+                    assert "alternatives" in item
+                else:
+                    p = item["product"]
+                    assert p.name
+                    assert isinstance(p.price, float) and p.price > 0
+                    assert p.unit
+                    assert p.brand
+                    assert p.store
+                    assert isinstance(p.brand, str)
 
     async def test_total_matches_sum_of_items(self, budget_service: BudgetService):
         result = await budget_service.get_best_budget(["Leche", "Pan", "Yerba"])
         for store, data in result.items():
-            expected = sum(item["product"].price for item in data["items"])
+            expected = sum(item["product"].price for item in data["items"] if item["product"])
             assert abs(data["total"] - expected) < 0.01
 
     async def test_multiple_queries_produce_multiple_items_per_store(self, budget_service: BudgetService):

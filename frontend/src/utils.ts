@@ -1,6 +1,6 @@
 import type { StoreConfig, ShoppingItem, OverridesMap, ResultsMap } from './types'
 
-export const ALL_STORES = ["Carrefour", "Changomas", "Disco", "Jumbo"]
+export const ALL_STORES = ["Carrefour", "Changomas", "Disco", "Jumbo", "MercadoLibre"]
 
 export const STORE_CONFIGS: Record<string, StoreConfig> = {
   Carrefour: {
@@ -39,6 +39,13 @@ export const STORE_CONFIGS: Record<string, StoreConfig> = {
       ],
     },
   },
+  MercadoLibre: {
+    auth: {
+      methods: [
+        { id: 'password', label: 'Email + Contraseña', fields: [{ key: 'email', label: 'Email', type: 'email', placeholder: 'tu@email.com' }, { key: 'password', label: 'Contraseña', type: 'password', placeholder: '••••••••' }] },
+      ],
+    },
+  },
 }
 
 export const STORE_CART_URLS: Record<string, string> = {
@@ -46,6 +53,7 @@ export const STORE_CART_URLS: Record<string, string> = {
   Changomas: "https://www.masonline.com.ar/checkout/#/cart",
   Disco: "https://www.disco.com.ar/checkout/#/cart",
   Jumbo: "https://www.jumbo.com.ar/checkout/#/cart",
+  MercadoLibre: "https://www.mercadolibre.com.ar/cart",
 }
 
 export function ageClass(lastUpdated?: string): string {
