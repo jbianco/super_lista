@@ -1,4 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Query
+from sqlmodel import Session
+from app.db.session import get_session
+from app.db.models import User
+from app.services.auth import get_optional_user
 from app.services.budget import BudgetService
 from app.services.cache import get_cache_timestamp
 from app.schemas import (
@@ -7,6 +11,7 @@ from app.schemas import (
     StoreBudget,
     BudgetItem,
     ProductResponse,
+    PriceHistoryResponse,
     AlternativesRequest,
     AlternativeGroup,
     SavingsPlanRequest,
@@ -19,10 +24,16 @@ from app.schemas import (
     BrandOption,
 )
 from app.providers.base import ProductResult
+from app.services.price_history import record_price, get_history, get_history_by_product
 import asyncio
 
 
-def _product_response(p: ProductResult, query: str) -> ProductResponse:
+def _product_response(p: ProductResult, query: str, session: Session | None = None) -> ProductResponse:
+    price_change: float | None = None
+    if session:
+        prev = get_history_by_product(session, p.store, p.name, limit=2)
+        if len(prev) >= 2 and prev[0].price != prev[1].price:
+            price_change = round((prev[0].price - prev[1].price) / prev[1].price * 100, 1)
     return ProductResponse(
         name=p.name,
         price=p.price,
@@ -32,6 +43,7 @@ def _product_response(p: ProductResult, query: str) -> ProductResponse:
         url=p.url,
         details=p.details,
         last_updated=get_cache_timestamp(p.store, query),
+        price_change_pct=price_change,
     )
 
 
@@ -39,20 +51,27 @@ router = APIRouter(prefix="/api", tags=["budget"])
 
 
 @router.post("/budget", response_model=BudgetResponse)
-async def get_budget(req: BudgetRequest):
+async def get_budget(
+    req: BudgetRequest,
+    current_user: User | None = Depends(get_optional_user),
+    session: Session = Depends(get_session),
+):
     service = BudgetService()
     budgets = await service.get_best_budget(req.items, req.stores)
 
     result = {}
     for store, data in budgets.items():
+        items = []
+        for i in data["items"]:
+            product = i["product"]
+            record_price(session, store, i["query"], product.name, product.price, product.unit, product.brand)
+            items.append(BudgetItem(
+                query=i["query"],
+                product=_product_response(product, i["query"], session),
+            ))
+
         result[store] = StoreBudget(
-            items=[
-                BudgetItem(
-                    query=i["query"],
-                    product=_product_response(i["product"], i["query"]),
-                )
-                for i in data["items"]
-            ],
+            items=items,
             total=data["total"],
             whatsapp_message=service.generate_whatsapp_message(data, store),
         )
@@ -61,7 +80,10 @@ async def get_budget(req: BudgetRequest):
 
 
 @router.post("/alternatives", response_model=list[AlternativeGroup])
-async def get_alternatives(req: AlternativesRequest):
+async def get_alternatives(
+    req: AlternativesRequest,
+    current_user: User | None = Depends(get_optional_user),
+):
     service = BudgetService()
     alternatives = await service.get_alternatives(req.query, req.stores)
 
@@ -77,7 +99,10 @@ async def get_alternatives(req: AlternativesRequest):
 
 
 @router.post("/savings-plan", response_model=SavingsPlanResponse)
-async def get_savings_plan(req: SavingsPlanRequest):
+async def get_savings_plan(
+    req: SavingsPlanRequest,
+    current_user: User | None = Depends(get_optional_user),
+):
     service = BudgetService()
     plan = await service.get_max_savings_plan(req.items, req.stores)
 
@@ -102,7 +127,10 @@ async def get_savings_plan(req: SavingsPlanRequest):
 
 
 @router.post("/product-options", response_model=ProductOptionsResponse)
-async def get_product_options(req: ProductOptionsRequest):
+async def get_product_options(
+    req: ProductOptionsRequest,
+    current_user: User | None = Depends(get_optional_user),
+):
     service = BudgetService()
 
     active_providers = service.all_providers
@@ -178,3 +206,33 @@ async def get_product_options(req: ProductOptionsRequest):
         characteristics=characteristics,
         cheapest=ProductResponse(**cheapest) if cheapest else None,
     )
+
+
+@router.get("/price-history", response_model=list[PriceHistoryResponse])
+def price_history(
+    store: str = Query(...),
+    query: str = Query(None),
+    product_name: str = Query(None),
+    limit: int = Query(30, ge=1, le=100),
+    current_user: User | None = Depends(get_optional_user),
+    session: Session = Depends(get_session),
+):
+    if product_name:
+        entries = get_history_by_product(session, store, product_name, limit)
+    elif query:
+        entries = get_history(session, store, query, limit)
+    else:
+        return []
+
+    return [
+        PriceHistoryResponse(
+            store=e.store,
+            query=e.query,
+            product_name=e.product_name,
+            price=e.price,
+            unit=e.unit,
+            brand=e.brand,
+            recorded_at=e.recorded_at.isoformat(),
+        )
+        for e in entries
+    ]

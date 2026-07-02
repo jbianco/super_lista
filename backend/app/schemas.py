@@ -17,11 +17,13 @@ class ProductResponse(BaseModel):
     url: Optional[str] = None
     details: Optional[str] = None
     last_updated: Optional[str] = None
+    price_change_pct: Optional[float] = None
 
 
 class BudgetItem(BaseModel):
     query: str
-    product: ProductResponse
+    product: Optional[ProductResponse] = None
+    alternatives: Optional[List[ProductResponse]] = None
 
 
 class StoreBudget(BaseModel):
@@ -87,3 +89,43 @@ class CharacteristicOption(BaseModel):
 class ProductOptionsResponse(BaseModel):
     characteristics: List[CharacteristicOption]
     cheapest: Optional[ProductResponse] = None
+
+
+class PriceHistoryResponse(BaseModel):
+    store: str
+    query: str
+    product_name: str
+    price: float
+    unit: str
+    brand: str
+    recorded_at: str
+
+
+class CartItem(BaseModel):
+    query: str
+    quantity: int = 1
+    name: Optional[str] = None
+
+
+class CartCredentials(BaseModel):
+    email: Optional[str] = None
+    password: Optional[str] = None
+    auth_method: Optional[str] = "password"
+    token: Optional[str] = None
+
+
+class CartRequest(BaseModel):
+    store_name: str
+    credentials: CartCredentials
+    items: List[CartItem]
+
+
+class CartItemResult(BaseModel):
+    query: str
+    status: str
+    error: Optional[str] = None
+
+
+class CartResponse(BaseModel):
+    success: bool
+    results: List[CartItemResult]

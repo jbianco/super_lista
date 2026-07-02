@@ -1,61 +1,90 @@
 # SuperLista 🛒🚀
 
-SuperLista es un agregador inteligente de precios de supermercados que te ayuda a ahorrar tiempo y dinero. Compara presupuestos entre las principales cadenas de Argentina y automatiza tu compra.
+SuperLista es un agregador inteligente de precios de supermercados que te ayuda a ahorrar tiempo y dinero. Compara presupuestos entre las principales cadenas de Argentina (Carrefour, Changomas, Disco, Jumbo) con datos reales vía API VTEX.
 
 ## ✨ Características Principales
 
-- **Comparativa Multitienda:** Evalúa tu lista en Carrefour, Changomas, Super Mami y Tadicor simultáneamente.
+- **Comparativa Multitienda:** Evalúa tu lista en 4 supermercados simultáneamente con datos reales.
 - **Plan de Ahorro Máximo (Splits):** Algoritmo que divide tu lista entre tiendas para obtener el precio más bajo posible.
-- **Alternativas Inteligentes:** Agrupamiento de productos por similitud (Fuzzy Matching) para encontrar tu marca favorita en cualquier tienda.
-- **Automatización de Carrito:** Integración con Playwright para llenar tu carrito automáticamente usando tus credenciales.
+- **Alternativas Inteligentes:** Cuando un producto no tiene stock, sugiere automáticamente alternativas similares.
+- **Automatización de Carrito:** Integración con Playwright para llenar tu carrito automáticamente (Carrefour, feature flag).
+- **Historial de Precios:** Registro automático de precios con gráfico de evolución y notificaciones de cambio.
+- **PWA:** Instalable como app, con service worker y caché offline de la API.
+- **Rate Limiting + Audit Logging:** 60 req/min global, 10/min register, 20/min login; log de todas las requests.
+- **Autenticación JWT:** Registro, login, gestión de credenciales por tienda.
+- **Docker + CI/CD:** Build multi-stage, docker-compose, GitHub Actions (test + lint + build).
 - **Compartir por WhatsApp:** Envía el presupuesto detallado con un solo clic.
 
 ## 🛠️ Requisitos
 
-- Python 3.10+
-- Node.js 18+
-- Playwright (para automatización de carrito)
+- Python 3.13+
+- Node.js 22+
+- Docker (opcional, para deploy)
 
 ## 🚀 Guía de Inicio Rápido
 
-### 1. Preparar el Backend
+### Con Docker (recomendado)
 ```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-playwright install --with-deps chromium
+docker compose up --build
+# Frontend: http://localhost:8080
+# Backend API: http://localhost:8000
 ```
 
-### 2. Ejecutar el Backend
+### Sin Docker
+
+#### 1. Backend
 ```bash
-# Desde la carpeta backend
-export PYTHONPATH=$PYTHONPATH:.
+cd backend
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+playwright install --with-deps chromium  # solo si usas carrito real
 uvicorn app.main:app --reload --port 8000
 ```
 
-### 3. Preparar el Frontend
+#### 2. Frontend
 ```bash
 cd frontend
 npm install
-```
-
-### 4. Ejecutar el Frontend
-```bash
-# Desde la carpeta frontend
 npm run dev
 ```
 
-## 📖 Cómo usar la Aplicación
+## 🧪 Tests
 
-1. **Selecciona tus Tiendas:** En la parte superior, marca los supermercados donde sueles comprar.
-2. **Configura tus Cuentas:** Si quieres usar la función de "Llenar Carrito", haz clic en "Mis Cuentas" e ingresa tus usuarios.
-3. **Crea tu Lista:** Escribe los productos (ej: "Leche entera", "Yerba mate 1kg") y presiona Enter.
-4. **Calcula el Ahorro:** Haz clic en "Calcular Ahorro".
-5. **Elige tu Opción:** 
-   - Puedes elegir el **Plan de Ahorro Máximo** para pagar lo mínimo posible dividiendo la compra.
-   - O elegir un supermercado específico y presionar **"Llenar Carrito"** para automatizar la carga.
-6. **WhatsApp:** Usa el botón de compartir para enviar la lista a tu familia o a ti mismo como recordatorio.
+```bash
+# Backend (34 tests)
+cd backend && python -m pytest
 
----
-Generado con ❤️ por Gemini CLI.
+# Frontend (37 tests)
+cd frontend && npm test
+
+# TypeScript check
+cd frontend && npx tsc --noEmit
+```
+
+## 📦 Scripts Útiles
+
+```bash
+# Regenerar tipos TypeScript desde OpenAPI
+cd frontend && npm run api-types
+
+# Build producción frontend
+cd frontend && npm run build
+```
+
+## 🌐 Supermercados Soportados
+
+| Supermercado | API | Carrito Real |
+|---|---|---|
+| Carrefour | VTEX Catalog API | Playwright (feature flag) |
+| Changomas | VTEX Catalog API | - |
+| Disco | VTEX Catalog API | - |
+| Jumbo | VTEX Catalog API | - |
+
+## 🔐 Variables de Entorno
+
+| Variable | Default | Descripción |
+|---|---|---|
+| `DATABASE_URL` | `sqlite:///./superlista.db` | Conexión a BD |
+| `JWT_SECRET_KEY` | `dev-secret-change-in-production` | Secreto JWT |
+| `USE_REAL_CART` | `false` | Activar carrito con Playwright |
+| `CORS_ORIGINS` | `http://localhost:5173,http://localhost:80` | Orígenes CORS |

@@ -39,6 +39,8 @@ async def search_vtex(
     query: str,
     max_results: int = 20,
 ) -> List[ProductResult]:
+    query = re.sub(r"[^\w\sáéíóúñü\-]", "", query)[:100]
+
     cached, last_updated = get_cached_products(store_name, query)
     if cached is not None and last_updated is not None:
         return cached

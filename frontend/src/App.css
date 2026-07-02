@@ -407,6 +407,7 @@ button:active {
 
 .product-cell {
   vertical-align: middle;
+  position: relative;
 }
 
 .prod-name {
@@ -599,6 +600,102 @@ button:active {
   font-size: 0.8rem;
   color: #ccc;
   font-style: italic;
+}
+
+.no-stock-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.no-stock-text {
+  font-size: 0.8rem;
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.btn-suggestion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 4px;
+  color: #92400e;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-suggestion:hover {
+  background: #fde68a;
+}
+
+.suggestions-dropdown {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 0.5rem;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.suggestion-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.75rem;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.history-btn {
+  margin-left: 0.25rem;
+  vertical-align: middle;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+.history-btn:hover {
+  opacity: 1;
+}
+
+.history-popup {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 0.5rem;
+  z-index: 100;
+  min-width: 180px;
+  animation: fadeIn 0.15s ease;
+}
+
+.suggestion-price {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.suggestion-store {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
 }
 
 /* ─── Table footer ─── */

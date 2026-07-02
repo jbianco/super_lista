@@ -43,3 +43,14 @@ class ProductCache(SQLModel, table=True):
     query: str = Field(index=True)
     products: str = Field(default="[]")
     last_updated: datetime = Field(default_factory=datetime.utcnow)
+
+
+class PriceHistory(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    store: str = Field(index=True)
+    query: str = Field(index=True)
+    product_name: str
+    price: float
+    unit: str
+    brand: str
+    recorded_at: datetime = Field(default_factory=datetime.utcnow, index=True)

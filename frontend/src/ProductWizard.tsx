@@ -255,13 +255,17 @@ export default function ProductWizard({ query, stores, onConfirm, onCancel }: Pr
                         <strong>{p.store}</strong>
                         {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="price-link" onClick={e => e.stopPropagation()}>Ver</a>}
                       </div>
-                      <span className="price-value">${p.price}</span>
-                      {currentChar.brands
-                        .find(b => b.name === selectedBrand)
-                        ?.products
-                        .every(p2 => p2.price >= p.price) && (
-                        <span className="price-badge">Menor precio</span>
-                      )}
+                      <div className="price-name">{p.name}</div>
+                      <div className="price-meta">{p.brand}{p.brand && p.unit ? ' — ' : ''}{p.unit}</div>
+                      <div className="price-row">
+                        <span className="price-value">${p.price}</span>
+                        {currentChar.brands
+                          .find(b => b.name === selectedBrand)
+                          ?.products
+                          .every(p2 => p2.price >= p.price) && (
+                          <span className="price-badge">Menor precio</span>
+                        )}
+                      </div>
                     </button>
                   ))}
               </div>

@@ -1,34 +1,30 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import List, Optional
+import os
+from fastapi import APIRouter, Depends
+from sqlmodel import Session
+from app.db.session import get_session
+from app.db.models import User
+from app.services.auth import get_optional_user
+from app.schemas import CartRequest, CartResponse
 from app.services.cart import CartService
-
+from app.services.automation import RealCartService, STORES_WITH_AUTOMATION
 
 router = APIRouter(prefix="/api", tags=["cart"])
 
-
-class CartCredentials(BaseModel):
-    email: Optional[str] = None
-    password: Optional[str] = None
-    auth_method: Optional[str] = "password"
-    token: Optional[str] = None
-
-
-class CartRequest(BaseModel):
-    store_name: str
-    credentials: CartCredentials
-    items: List[str]
-
-
-class CartResponse(BaseModel):
-    success: bool
+USE_REAL_CART = os.getenv("USE_REAL_CART", "false").lower() == "true"
 
 
 @router.post("/cart", response_model=CartResponse)
-async def add_to_cart(req: CartRequest):
-    service = CartService()
+async def add_to_cart(
+    req: CartRequest,
+    current_user: User | None = Depends(get_optional_user),
+    session: Session = Depends(get_session),
+):
     creds_dict = req.credentials.model_dump(exclude_none=True)
-    success = await service.add_to_cart(
-        req.store_name, creds_dict, req.items
-    )
-    return CartResponse(success=success)
+    items_dict = [i.model_dump() for i in req.items]
+
+    if USE_REAL_CART and req.store_name in STORES_WITH_AUTOMATION:
+        service = RealCartService()
+    else:
+        service = CartService()
+
+    return await service.add_to_cart(req.store_name, creds_dict, items_dict)

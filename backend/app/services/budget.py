@@ -36,18 +36,25 @@ class BudgetService:
         search_results = await asyncio.gather(*tasks)
         
         for res in search_results:
-            if not res["products"]:
-                continue
-            
             store = res["store"]
             if store not in budgets_by_store:
                 budgets_by_store[store] = {"items": [], "total": 0.0}
+            
+            if not res["products"]:
+                alt_groups = await self.get_alternatives(res["query"], [res["store"]])
+                alternatives = [g["product"] for g in alt_groups]
+                budgets_by_store[store]["items"].append({
+                    "query": res["query"],
+                    "product": None,
+                    "alternatives": alternatives,
+                })
+                continue
             
             best_product = min(res["products"], key=lambda p: p.price)
             
             budgets_by_store[store]["items"].append({
                 "query": res["query"],
-                "product": best_product
+                "product": best_product,
             })
             budgets_by_store[store]["total"] += best_product.price
 

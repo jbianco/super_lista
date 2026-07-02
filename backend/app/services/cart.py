@@ -1,19 +1,20 @@
 import asyncio
 from typing import List, Dict
+from app.schemas import CartItemResult, CartResponse
+
 
 class CartService:
-    async def add_to_cart(self, store_name: str, credentials: Dict, items: List[str]) -> bool:
-        """
-        Simula la automatización de agregar productos al carrito.
-        En una fase avanzada, esto usará Playwright para entrar al sitio real.
-        """
-        print(f"[Automator] Iniciando sesión en {store_name} para {credentials['email']}...")
-        await asyncio.sleep(2) # Simular carga de página
-        
-        print(f"[Automator] Sesión iniciada. Agregando {len(items)} productos...")
+    async def add_to_cart(self, store_name: str, credentials: Dict, items: List[Dict]) -> CartResponse:
+        print(f"[Automator] Iniciando sesión en {store_name} para {credentials.get('email', '?')}...")
+        await asyncio.sleep(0.5)
+
+        results: List[CartItemResult] = []
         for item in items:
-            await asyncio.sleep(1) # Simular búsqueda y clic en "agregar"
-            print(f"[Automator] + {item} agregado al carrito de {store_name}")
-            
+            query = item.get("query", "?")
+            qty = item.get("quantity", 1)
+            print(f"[Automator] + {qty}x {query} agregado al carrito de {store_name}")
+            await asyncio.sleep(0.3)
+            results.append(CartItemResult(query=query, status="added"))
+
         print(f"[Automator] Proceso completado para {store_name}.")
-        return True
+        return CartResponse(success=True, results=results)
