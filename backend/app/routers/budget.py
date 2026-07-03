@@ -42,6 +42,7 @@ def _product_response(p: ProductResult, query: str, session: Session | None = No
         store=p.store,
         url=p.url,
         details=p.details,
+        image_url=p.image_url,
         last_updated=get_cache_timestamp(p.store, query),
         price_change_pct=price_change,
     )

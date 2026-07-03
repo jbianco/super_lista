@@ -281,6 +281,35 @@
   background: #e7f9ee;
 }
 
+.price-card-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.price-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.price-thumb.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #ccc;
+}
+
+.price-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
 .price-store {
   display: flex;
   align-items: center;
@@ -355,6 +384,24 @@
   margin-bottom: 0.5rem;
 }
 
+.done-image {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  margin-bottom: 0.75rem;
+}
+
+.done-image.placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #ccc;
+}
+
 .done-product p {
   margin: 0.3rem 0;
   font-size: 0.9rem;
@@ -381,6 +428,24 @@
   padding: 2rem;
   width: 100%;
   max-width: 320px;
+}
+
+.lowest-image {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.lowest-image.placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #ccc;
 }
 
 .lowest-badge {

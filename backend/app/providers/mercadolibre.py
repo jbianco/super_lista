@@ -43,6 +43,7 @@ async def _search_api(query: str) -> List[ProductResult]:
             store="MercadoLibre",
             url=item.get("permalink", ""),
             details=title,
+            image_url=item.get("thumbnail", None),
         ))
 
     return results
@@ -91,6 +92,9 @@ async def _search_playwright(query: str) -> List[ProductResult]:
                 el_link = await card.query_selector("a")
                 link = await el_link.get_attribute("href") if el_link else ""
 
+                el_img = await card.query_selector("img")
+                img_url = await el_img.get_attribute("src") if el_img else None
+
                 results.append(ProductResult(
                     name=title,
                     price=price,
@@ -99,6 +103,7 @@ async def _search_playwright(query: str) -> List[ProductResult]:
                     store="MercadoLibre",
                     url=link or "",
                     details=title,
+                    image_url=img_url,
                 ))
             except Exception:
                 continue

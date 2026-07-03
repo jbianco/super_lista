@@ -13,6 +13,7 @@ export interface ProductResult {
   store: string;
   url?: string;
   details?: string;
+  image_url?: string;
   last_updated?: string;
   price_change_pct?: number | null;
 }

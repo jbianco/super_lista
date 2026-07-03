@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import { Edit3, X, CheckCircle2, Zap, ExternalLink, ShoppingCart, Send, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react'
+import { Edit3, X, CheckCircle2, Zap, ExternalLink, ShoppingCart, Send, ChevronDown, ChevronUp, TrendingUp, ImageOff } from 'lucide-react'
 import type { ShoppingItem, OverridesMap, ResultsMap, AlternativesMap } from '../types'
 import { ageClass, calculateTotal } from '../utils'
-import type { PriceHistoryEntry } from '../api'
+import type { PriceHistoryEntry, ProductResult } from '../api'
 import { fetchPriceHistory } from '../api'
 
 interface ComparisonTableProps {
@@ -17,6 +17,42 @@ interface ComparisonTableProps {
   onExcludeCell: (query: string, store: string) => void
   onAddToCart: (store: string) => void
   getWhatsAppLinkFn: (store: string) => string
+}
+
+function ProductDetailModal({ product, onClose }: { product: ProductResult; onClose: () => void }) {
+  return (
+    <div className="detail-overlay" onClick={onClose}>
+      <div className="detail-modal" onClick={e => e.stopPropagation()}>
+        <button className="detail-close" onClick={onClose}><X size={20} /></button>
+        {product.image_url ? (
+          <img
+            className="detail-image"
+            src={product.image_url}
+            alt={product.name}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        ) : (
+          <div className="detail-image-placeholder">
+            <ImageOff size={48} />
+          </div>
+        )}
+        <div className="detail-info">
+          <h3 className="detail-name">{product.name}</h3>
+          <div className="detail-meta">
+            <span className="detail-brand">{product.brand}</span>
+            <span className="detail-unit">{product.unit}</span>
+          </div>
+          <div className="detail-price">${product.price}</div>
+          <div className="detail-store">en {product.store}</div>
+          {product.url && (
+            <a href={product.url} target="_blank" className="detail-link" rel="noreferrer">
+              <ExternalLink size={14} /> Ver en {product.store}
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function PriceChart({ history }: { history: PriceHistoryEntry[] }) {
@@ -67,6 +103,7 @@ export function ComparisonTable({
   const [priceHistoryData, setPriceHistoryData] = useState<Record<string, PriceHistoryEntry[]>>({})
   const [priceHistoryLoading, setPriceHistoryLoading] = useState<Record<string, boolean>>({})
   const [activeHistory, setActiveHistory] = useState<string | null>(null)
+  const [detailProduct, setDetailProduct] = useState<ProductResult | null>(null)
   const historyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -193,7 +230,22 @@ export function ComparisonTable({
                               </span>
                             )}
                             {aClass && <div className="age-indicator" title={`Actualizado: ${new Date(p.last_updated!).toLocaleString()}`} />}
-                            <div className="prod-name">{p.name}</div>
+                            <div className="prod-header">
+                              {p.image_url ? (
+                                <img
+                                  className="product-thumbnail"
+                                  src={p.image_url}
+                                  alt={p.name}
+                                  onClick={() => setDetailProduct(p)}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                                />
+                              ) : (
+                                <div className="product-thumbnail placeholder" onClick={() => setDetailProduct(p)}>
+                                  <ImageOff size={16} />
+                                </div>
+                              )}
+                              <div className="prod-name" onClick={() => setDetailProduct(p)}>{p.name}</div>
+                            </div>
                             <div className="prod-brand">{p.brand}</div>
                             <div className="prod-price">
                               ${p.price * it.quantity}
@@ -272,6 +324,7 @@ export function ComparisonTable({
           </tfoot>
         </table>
       </div>
+      {detailProduct && <ProductDetailModal product={detailProduct} onClose={() => setDetailProduct(null)} />}
     </div>
   )
 }

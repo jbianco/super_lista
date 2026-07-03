@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Loader2, Check, Zap, X } from 'lucide-react'
+import { Loader2, Check, Zap, X, ImageOff } from 'lucide-react'
 import { fetchProductOptions, type ProductResult, type CharacteristicOption } from './api'
 import './ProductWizard.css'
 
@@ -251,20 +251,29 @@ export default function ProductWizard({ query, stores, onConfirm, onCancel }: Pr
                       className={`price-card ${selectedProduct?.store === p.store && selectedProduct?.price === p.price ? 'selected' : ''}`}
                       onClick={() => handleSelectProduct(p)}
                     >
-                      <div className="price-store">
-                        <strong>{p.store}</strong>
-                        {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="price-link" onClick={e => e.stopPropagation()}>Ver</a>}
-                      </div>
-                      <div className="price-name">{p.name}</div>
-                      <div className="price-meta">{p.brand}{p.brand && p.unit ? ' — ' : ''}{p.unit}</div>
-                      <div className="price-row">
-                        <span className="price-value">${p.price}</span>
-                        {currentChar.brands
-                          .find(b => b.name === selectedBrand)
-                          ?.products
-                          .every(p2 => p2.price >= p.price) && (
-                          <span className="price-badge">Menor precio</span>
+                      <div className="price-card-row">
+                        {p.image_url ? (
+                          <img className="price-thumb" src={p.image_url} alt={p.name} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                        ) : (
+                          <div className="price-thumb placeholder"><ImageOff size={16} /></div>
                         )}
+                        <div className="price-card-body">
+                          <div className="price-store">
+                            <strong>{p.store}</strong>
+                            {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="price-link" onClick={e => e.stopPropagation()}>Ver</a>}
+                          </div>
+                          <div className="price-name">{p.name}</div>
+                          <div className="price-meta">{p.brand}{p.brand && p.unit ? ' — ' : ''}{p.unit}</div>
+                          <div className="price-row">
+                            <span className="price-value">${p.price}</span>
+                            {currentChar.brands
+                              .find(b => b.name === selectedBrand)
+                              ?.products
+                              .every(p2 => p2.price >= p.price) && (
+                              <span className="price-badge">Menor precio</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </button>
                   ))}
@@ -287,6 +296,11 @@ export default function ProductWizard({ query, stores, onConfirm, onCancel }: Pr
               <div className="lowest-preview">
                 <div className="lowest-product">
                   <div className="lowest-badge"><Zap size={16} /> Menor precio</div>
+                  {selectedProduct.image_url ? (
+                    <img className="lowest-image" src={selectedProduct.image_url} alt={selectedProduct.name} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  ) : (
+                    <div className="lowest-image placeholder"><ImageOff size={32} /></div>
+                  )}
                   <p className="lowest-name"><strong>{selectedProduct.name}</strong></p>
                   <p className="lowest-brand">Marca: {selectedProduct.brand}</p>
                   <p className="lowest-price-text">${selectedProduct.price}</p>
@@ -312,6 +326,11 @@ export default function ProductWizard({ query, stores, onConfirm, onCancel }: Pr
               <div className="done-icon"><Check size={32} /></div>
               <p className="done-title">Producto seleccionado</p>
               <div className="done-product">
+                {selectedProduct.image_url ? (
+                  <img className="done-image" src={selectedProduct.image_url} alt={selectedProduct.name} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                ) : (
+                  <div className="done-image placeholder"><ImageOff size={24} /></div>
+                )}
                 <p><strong>{selectedProduct.name}</strong></p>
                 <p>Marca: {selectedProduct.brand}</p>
                 <p>Precio: ${selectedProduct.price}</p>

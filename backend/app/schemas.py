@@ -16,6 +16,7 @@ class ProductResponse(BaseModel):
     store: str
     url: Optional[str] = None
     details: Optional[str] = None
+    image_url: Optional[str] = None
     last_updated: Optional[str] = None
     price_change_pct: Optional[float] = None
 
