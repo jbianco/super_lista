@@ -1,0 +1,82 @@
+services:
+  # ── Gateway (Caddy) ─────────────────────────────────────────────
+  # Single entry point: TLS termination, rate limiting, security headers.
+  # All external traffic goes through here — backend and frontend are
+  # not directly exposed.
+  gateway:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"    # HTTP (auto-redirects to HTTPS)
+      - "443:443"  # HTTPS with auto TLS via Let's Encrypt
+    volumes:
+      - ./infrastructure/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - superlista
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── Backend (FastAPI) ───────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    # No exposed ports — only reachable through gateway
+    environment:
+      - DATABASE_URL=sqlite:///data/superlista.db
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - USE_REAL_CART=${USE_REAL_CART:-false}
+      - CORS_ORIGINS=https://${DOMAIN:-your-domain.com}
+    volumes:
+      - backend_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - superlista
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── Frontend (Nginx SPA) ────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    # No exposed ports — served through gateway
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - superlista
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  backend_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  superlista:
+    driver: bridge

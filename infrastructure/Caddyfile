@@ -1,0 +1,72 @@
+# Caddy Gateway Configuration for SuperLista
+# Replace your-domain.com with your actual domain
+# TLS is automatic via Let's Encrypt
+
+your-domain.com {
+    # Security headers (OWASP recommended)
+    header {
+        # Prevent MIME-type sniffing
+        X-Content-Type-Options "nosniff"
+        # Prevent clickjacking
+        X-Frame-Options "DENY"
+        # Enable XSS filter in browsers
+        X-XSS-Protection "1; mode=block"
+        # HSTS - force HTTPS for 1 year (include subdomains)
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Permissions policy - restrict APIs
+        Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+        # Content Security Policy
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.mercadolibre.com; font-src 'self'; worker-src 'self' blob:"
+    }
+
+    # Rate limiting (per client IP)
+    rate_limit {
+        zone dynamic {
+            key {remote_host}
+            events 60
+            window 1m
+        }
+    }
+
+    # API requests -> backend
+    handle_path /api/* {
+        reverse_proxy backend:8000 {
+            # Forward client IP to backend
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Favicon / robots
+    handle_path /favicon.ico {
+        root * /usr/share/nginx/html
+        file_server
+    }
+    handle_path /robots.txt {
+        root * /usr/share/nginx/html
+        file_server
+    }
+
+    # Static files -> frontend nginx
+    handle {
+        reverse_proxy frontend:80 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Gzip compression
+    encode gzip
+
+    # Logs
+    log {
+        output file /data/logs/access.log
+        format json
+    }
+}
+
+# Redirect HTTP to HTTPS (Caddy does this automatically)

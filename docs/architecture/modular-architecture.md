@@ -75,10 +75,10 @@ backend/app/
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                    FRONTEND (React SPA)                      │
-│  ┌──────────┐  ┌──────────────┐  ┌──────────────────────┐   │
-│  │ api.ts   │  │ App.tsx      │  │ ProductWizard.tsx    │   │
-│  │ (axios)  │  │ (orchestrator)│  │ (multi-step modal)   │   │
-│  └────┬─────┘  └──────┬───────┘  └──────────────────────┘   │
+│  ┌──────────┐   ┌──────────────┐  ┌──────────────────────┐   │
+│  │ api.ts   │   │ App.tsx      │  │ ProductWizard.tsx    │   │
+│  │ (axios)  │   │(orchestrator)│  │ (multi-step modal)   │   │
+│  └────┬─────┘   └──────┬───────┘  └──────────────────────┘   │
 │       │                │                                     │
 │       └── localStorage ┘ (6 keys: lists, stores, results,    │
 │                            credentials, overrides, activeId) │
@@ -101,7 +101,7 @@ backend/app/
 │         │            └────────┬─────────┘│                   │
 │         │                     │          │                   │
 │         │            ┌────────▼──────────▼───────┐           │
-│         │            │ providers/                 │           │
+│         │            │ providers/                │           │
 │         │            │ base.py (abstract)        │           │
 │         │            │ carrefour.py              │           │
 │         │            │ changomas.py              │           │
@@ -274,13 +274,13 @@ App.tsx (~170 lines, composed of):
 ## 6. Interconnection Summary
 
 ```
-┌─────────────────┐     HTTP (JSON)     ┌─────────────────────┐
-│  Frontend       │────────────────────▶│  FastAPI Routers    │
-│  (React 19)     │◀────────────────────│  /budget, /cart     │
-│  ┌───────────┐  │     typed responses  │  ┌───────────────┐ │
-│  │ api.ts    │──┘                      │  │ schemas.py    │ │
-│  │ (axios)  │                         │  └───────────────┘ │
-│  └───────────┘                         └─────────┬──────────┘
+┌─────────────────┐     HTTP (JSON)     ┌────────────────────┐
+│  Frontend       │────────────────────▶│  FastAPI Routers   │
+│  (React 19)     │◀────────────────────│  /budget, /cart    │
+│  ┌───────────┐  │    typed responses  │  ┌───────────────┐ │
+│  │ api.ts    │──┘                     │  │ schemas.py    │ │
+│  │ (axios)   │                        │  └───────────────┘ │
+│  └───────────┘                        └─────────┬──────────┘
 │  ┌───────────┐                                  │
 │  │ hooks/    │── state management               │
 │  │ (custom)  │── localStorage persistence       │
