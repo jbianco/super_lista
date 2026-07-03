@@ -246,9 +246,90 @@ Oracle reclama VMs con <20% de CPU/red/memoria por 7 días. SuperLista responde 
 
 ---
 
+---
+
+## GitOps: Deploy Automático desde Git
+
+Cada vez que hacés push a `main`, el pipeline CD construye imágenes Docker, las sube a GitHub Container Registry (ghcr.io), y las despliega automáticamente en el servidor.
+
+### Flujo GitOps
+
+```
+Push a main → GitHub Actions (CD) →
+  1. docker/build-push-action: construye backend + frontend
+  2. Push a ghcr.io/jbianco/super_lista/{backend,frontend}:latest
+  3. SSH al VPS → git pull → docker compose pull → docker compose up -d
+```
+
+### Secretos Requeridos en GitHub
+
+Agregar en `Settings → Secrets and variables → Actions`:
+
+| Secreto | Descripción |
+|---|---|
+| `VPS_HOST` | IP pública del servidor |
+| `VPS_USER` | Usuario SSH (ej: `ubuntu`, `opc`, `root`) |
+| `VPS_SSH_KEY` | Clave privada SSH (formato PEM) |
+| `GHCR_TOKEN` | GitHub PAT con scopes `read:packages` y `write:packages` |
+
+> El `GITHUB_TOKEN` automático se usa para build/push. El `GHCR_TOKEN` (PAT manual) se necesita para que el VPS pueda autenticarse contra ghcr.io y bajar las imágenes.
+
+### Preparar el VPS
+
+```bash
+# 1. Conectarse al servidor
+ssh root@<IP>
+
+# 2. Ejecutar el setup GitOps
+chmod +x infrastructure/setup-gitops-vps.sh
+sudo ./infrastructure/setup-gitops-vps.sh
+
+# 3. Configurar variables de entorno
+nano /opt/superlista/.env.prod
+# → DOMAIN, JWT_SECRET_KEY, etc.
+
+# 4. Autenticar contra ghcr.io (una vez)
+echo $GHCR_TOKEN | docker login ghcr.io -u <tu-user> --password-stdin
+
+# 5. Iniciar stack por primera vez
+cd /opt/superlista
+docker compose -f docker-compose.prod.yml up -d
+```
+
+> La primera vez hay que hacer `docker compose up -d` manual. A partir de ahí, cada push a `main` ejecuta el deploy automático.
+
+### Verificar el Pipeline
+
+1. Hacer push a `main`
+2. Ir a `https://github.com/jbianco/super_lista/actions` → pestaña **CD**
+3. Observar: build-and-push → deploy
+4. En el VPS: `docker compose -f docker-compose.prod.yml ps` para ver servicios activos
+
+### Rollback
+
+Si un deploy falla:
+
+```bash
+# Volver al commit anterior
+cd /opt/superlista
+git checkout <commit-hash-anterior>
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+O desde GitHub:
+1. Ir a `Actions` → seleccionar el workflow **CD** anterior exitoso
+2. Click **Re-run all jobs**
+
+### Watchtower (auto-update opcional)
+
+Descomentar el servicio `watchtower` en `docker-compose.prod.yml` para que el VPS detecte automáticamente nuevas imágenes en ghcr.io y reinicie los contenedores. Útil como respaldo si el deploy por SSH falla.
+
+---
+
 ## Referencias
 
 - [Cloudflare Tunnel Docs](https://developers.cloudflare.com/tunnel/)
 - [Oracle Cloud Always Free](https://www.oracle.com/cloud/free/)
 - [Caddy Server](https://caddyserver.com/docs/)
 - [Docker Compose](https://docs.docker.com/compose/)
+- [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)

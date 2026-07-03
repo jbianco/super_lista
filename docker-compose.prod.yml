@@ -1,3 +1,15 @@
+# =============================================================================
+# SuperLista — Production Deployment (GitOps-ready)
+# =============================================================================
+# Usage:
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# GitOps flow:
+#   1. Push to main → GitHub Actions builds & pushes images to ghcr.io
+#   2. GitHub Actions SSHes into the VPS, pulls new images, and restarts
+#   3. No manual steps on the server
+# =============================================================================
+
 services:
   # ── Gateway (Caddy) ─────────────────────────────────────────────
   # Single entry point: TLS termination, rate limiting, security headers.
@@ -27,10 +39,13 @@ services:
         max-file: "3"
 
   # ── Backend (FastAPI) ───────────────────────────────────────────
+  # Pre-built image: ghcr.io/jbianco/super_lista/backend
+  # Build locally:  docker compose -f docker-compose.prod.yml build backend
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
+    image: ghcr.io/jbianco/super_lista/backend:latest
     # No exposed ports — only reachable through gateway
     environment:
       - DATABASE_URL=sqlite:///data/superlista.db
@@ -55,10 +70,13 @@ services:
         max-file: "3"
 
   # ── Frontend (Nginx SPA) ────────────────────────────────────────
+  # Pre-built image: ghcr.io/jbianco/super_lista/frontend
+  # Build locally:  docker compose -f docker-compose.prod.yml build frontend
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    image: ghcr.io/jbianco/super_lista/frontend:latest
     # No exposed ports — served through gateway
     depends_on:
       backend:
@@ -71,6 +89,20 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  # ── Watchtower (auto-update) ────────────────────────────────────
+  # Optional: automatically pulls new images and restarts containers.
+  # Enable by uncommenting below.
+  # watchtower:
+  #   image: containrrr/watchtower
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   environment:
+  #     - WATCHTOWER_CLEANUP=true
+  #     - WATCHTOWER_POLL_INTERVAL=300
+  #   restart: unless-stopped
+  #   networks:
+  #     - superlista
 
 volumes:
   backend_data:
